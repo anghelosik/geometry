@@ -1,0 +1,16 @@
+# geometry project — default configuration
+
+square:
+  side_length: 10.0          # default side length L
+
+analysis:
+  iterations: 100000         # default number of iterations for distance_analysis.py
+  tolerance: 1.0e-9          # numerical tolerance for perimeter checks
+
+demo:
+  iterations: 1000           # iterations used by main.py
+  side_length: 10.0
+
+output:
+  plots_dir: output/plots
+  csv_dir: output

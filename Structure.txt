@@ -1,0 +1,68 @@
+========================================
+PROJECT STRUCTURE DOCUMENTATION
+========================================
+
+Root folder: mypythonproject
+Project folder: geometry
+Main module: square_points.py
+
+----------------------------------------
+1. PROJECT STRUCTURE
+----------------------------------------
+mypythonproject\geometry\
+    __init__.py
+    main.py
+    README.md
+    requirements.txt
+    setup.py
+    .gitignore
+    Makefile
+    Structure.txt
+    square_points.py
+
+    core\
+    utils\
+    models\
+    data\
+    config\
+    output\
+    tests\
+    docs\
+    scripts\
+    examples\
+    notebooks\
+
+----------------------------------------
+2. FILE DESCRIPTIONS
+----------------------------------------
+__init__.py - makes the folder a Python package.
+main.py - entry point of the project.
+README.md - project description and usage notes.
+requirements.txt - Python dependencies for this project only.
+setup.py - optional packaging file.
+.gitignore - excludes temporary and generated files.
+Makefile - automation commands.
+Structure.txt - this documentation file.
+square_points.py - main case-study module.
+
+----------------------------------------
+3. CASE STUDY: TWO POINTS ON A SQUARE
+----------------------------------------
+The main module square_points.py implements methods to pick two distinct points
+on the boundary of a square of side L. Example strategies:
+  1. Uniform independent selection on different sides.
+  2. Conditional selection (e.g., opposite sides).
+  3. Selection with geometric constraints (e.g., minimum distance).
+  4. Symmetric selection with respect to the center.
+
+----------------------------------------
+4. GIT INITIALIZATION
+----------------------------------------
+cd mypythonproject\geometry
+git init
+git add .
+git commit -m "Initial project structure"
+
+----------------------------------------
+END OF DOCUMENT
+----------------------------------------
