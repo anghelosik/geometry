@@ -20,7 +20,6 @@
 9. [Test suite](#9-test-suite)
 10. [Available documentation](#10-available-documentation)
 11. [Useful commands (Makefile)](#11-useful-commands-makefile)
-12. [Technical notes and fixed bugs](#12-technical-notes-and-fixed-bugs)
 
 ---
 
@@ -94,7 +93,8 @@ geometry/
 │
 ├── docs/
 │   ├── index.md                      # This file
-│   └── distance_analysis_report.md   # Report on the analysis results
+│   ├── distance_analysis_report.md   # Report on the analysis results
+│   └── history.md                    # Bug fixes and refactoring history
 │
 ├── examples/
 │   └── basic_usage.py        # API usage examples
@@ -117,8 +117,7 @@ geometry/
 ├── setup.py                   # Optional packaging configuration
 ├── Makefile                   # Automation of the main commands
 ├── .gitignore                 # Files and directories excluded from version control
-├── README.md                  # Short project description (root)
-└── Structure.txt              # Structure documentation (legacy)
+└── README.md                  # Short project description (root)
 ```
 
 ---
@@ -136,7 +135,7 @@ geometry/
 ```bat
 cd mypythonproject\geometry
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate.bat
 ```
 
 **Linux / macOS:**
@@ -240,7 +239,7 @@ sampling.
 | Function | Descriptive name | Distribution | Notes |
 |----------|-----------------|--------------|-------|
 | `sample_parametric` | Linear perimeter parametrization | **Uniform** | Parameter `t ∈ [0, 4L)`, rejection if coincident |
-| `sample_by_side` | Side selection | **Uniform** | Picks the side, then a uniform coordinate; **bug fixed** (see §12) |
+| `sample_by_side` | Side selection | **Uniform** | Picks the side, then a uniform coordinate |
 | `sample_by_edge_label` | Edge labels (x0/xL/y0/yL) | **Uniform** | Equivalent to `sample_parametric` and `sample_by_side` |
 | `sample_polar_ray` | Ray from center (polar angle) | Non-uniform | Uniform polar angle → over-representation of corners |
 | `sample_side_pos` | Side + position | **Uniform** | Rejection on identical (side, coordinate) pair |
@@ -299,11 +298,6 @@ Runs an interactive demo that for each method:
 
 Expected output: all 9 methods pass all checks with status `[OK]`.
 
-> **Note:** `main.py` still uses the original Italian-style function names
-> (`metodo1` … `metodo6_proiezione`) from the project's initial version.
-> If you replace `square_points.py` with the current version, update the
-> imports in `main.py` accordingly.
-
 ---
 
 ## 9. Test Suite
@@ -325,11 +319,11 @@ bash scripts/run_tests.sh   # Linux / macOS
 
 ### Main test classes
 
-**`TestSampleBySideFix`** — specifically verifies the bug fix in `sample_by_side`:
-- `test_same_side_allowed`: checks that pairs of points on the same side are
-  generated (before the fix this never happened)
-- `test_side_distribution_is_balanced`: verifies that the frequency per side is
-  in the range 18–32% over 4000 samples (expected 25%)
+**`TestSampleBySideFix`** — verifies that `sample_by_side` correctly allows
+pairs of points on the same side:
+- `test_same_side_allowed`: checks that same-side pairs are generated
+- `test_side_distribution_is_balanced`: verifies that each side receives 18–32%
+  of points over 4000 samples (expected 25%)
 
 **Parametric tests on all 9 methods** (via `@pytest.mark.parametrize`):
 - `test_returns_two_tuples`: output is in the correct format
@@ -353,8 +347,8 @@ bash scripts/run_tests.sh   # Linux / macOS
 |------|----------|---------|
 | `index.md` | `docs/index.md` | This document — complete project overview |
 | `distance_analysis_report.md` | `docs/distance_analysis_report.md` | Statistical analysis of the 9 methods with numerical results and mathematical interpretation |
+| `history.md` | `docs/history.md` | Bug fixes, warning fixes, and refactoring decisions |
 | `README.md` | project root | Brief description for quick access |
-| `Structure.txt` | project root | Structure documentation (original file, legacy) |
 
 ---
 
@@ -363,57 +357,10 @@ bash scripts/run_tests.sh   # Linux / macOS
 The project includes a `Makefile` for automating the most common operations.
 Run `make` from the `geometry/` folder to see the available targets.
 
-Typical examples:
-
 ```bash
+make install     # install dependencies
 make test        # run the full test suite
 make run         # run main.py
+make analyse     # run distance_analysis.py (100k iterations)
 make clean       # remove __pycache__ and temporary files
 ```
-
----
-
-## 12. Technical Notes and Fixed Bugs
-
-### Bug in `sample_by_side` (fixed)
-
-**Problem:** The original condition `while side1 == side2` forced the two points
-onto *different sides*, systematically excluding approximately 25% of valid pairs
-(those where both points fall on the same side).
-
-**Effect:** The method produced a biased distribution and answered a different
-question from the other methods. The bias was detectable but not obvious,
-because the percentage >L still came out around 30–35%.
-
-**Empirical verification:** With 10 000 iterations, the original method produced
-0 same-side pairs (0.0%); the expected value is ~25%.
-
-**Fix:** The constraint was removed. The two points are now sampled independently,
-and rejection only occurs if the points are geometrically coincident (via
-`_is_distinct`).
-
-**Test added:** `TestSampleBySideFix.test_same_side_allowed` in
-`tests/test_square_points.py` would have caught this bug immediately.
-
-### SyntaxWarning in distance_analysis.py
-
-The Windows path in the docstring of `distance_analysis.py` contained `\S`
-(in `\Scripts`), interpreted by Python as an invalid escape sequence.
-Fixed by doubling the backslash: `\\Scripts`.
-
-### Renaming from Italian to English identifiers
-
-The original codebase used Italian-style function names (`metodo1` … `metodo6_proiezione`).
-All public functions have been renamed to descriptive English identifiers:
-
-| Original name | Current name |
-|---------------|--------------|
-| `metodo1` | `sample_parametric` |
-| `metodo2` | `sample_by_side` |
-| `metodo3` | `sample_by_edge_label` |
-| `metodo4` | `sample_polar_ray` |
-| `metodo5` | `sample_side_pos` |
-| `metodo1_alt` | `sample_parametric_modular` |
-| `metodo3_alt` | `sample_cartesian` |
-| `metodo4_alt` | `sample_polar_angle` |
-| `metodo6_proiezione` | `sample_interior_projection` |
